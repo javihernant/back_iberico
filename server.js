@@ -13,7 +13,9 @@ app.use(cors({
 const numEquipos = 12
 
 const auth = new google.auth.GoogleAuth({
-  keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+  credentials: JSON.parse(
+    Buffer.from(process.env.SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8')
+  ),
   scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
 });
 

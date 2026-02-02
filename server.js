@@ -29,6 +29,39 @@ async function getSheetRange(range) {
     return response.data.values;
 }
 
+async function get_respuestas(equipo) {
+  const client = await auth.getClient();
+  const sheets = google.sheets({ version: "v4", auth: client });
+  const response = await sheets.spreadsheets.values.batchGet({
+    spreadsheetId: process.env.SPREADSHEET_ID,
+    ranges: [
+      "Respuestas!C2:C",
+      "Respuestas!D2:D",
+      "Respuestas!I2:I",
+      "Respuestas!J2:J",
+      "Respuestas!K2:K",
+      "Respuestas!L2:L",
+      "Respuestas!M2:M",
+
+    ],
+  });
+  const data = response.data.valueRanges.map(r => r.values.map(s=>s[0]?? null))
+  const len = Math.min(data[0].length, data[1].length, data[2].length, data[3].length, data[4].length, data[5].length, data[6].length);
+  const res_equipos = Array.from(
+    { length: len },
+    (_, i) => {
+      const obj = {orig:data[0][i], dest:data[1][i], con:Number(data[2][i]), fa:Number(data[3][i]),im:Number(data[4][i]),ac:Number(data[5][i]),com:Number(data[6][i])}
+      obj.tot = obj.con + obj.fa + obj.im + obj.ac + obj.com;
+      return obj
+  })
+  .filter(obj => obj.dest === equipo);
+  const sp_sum = res_equipos.reduce((acc,el) => acc + el.tot, 0)
+  const sotg = sp_sum / res_equipos.length
+  const res = {equipos:res_equipos, sotg}
+
+  return res;
+}
+
 app.get("/api/equipos", async (req, res) => {
   try {
     const data = await getSheetRange("Resultados!C7:C18");
@@ -102,5 +135,15 @@ app.get("/api/respuestas_faltan", async (req, res) => {
       res.status(500).json({ error: err.message });
     }
 });
+
+app.get("/api/respuestas/:equipo", async (req, res) => {
+  try {
+    const equipo = req.params.equipo
+    const data = await get_respuestas(equipo);
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+})
 
 app.listen(3001, () => console.log("Server running on port 3001"));

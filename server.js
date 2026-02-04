@@ -42,6 +42,7 @@ async function get_respuestas(equipo) {
       "Respuestas!K2:K",
       "Respuestas!L2:L",
       "Respuestas!M2:M",
+      "Respuestas!N2:N",
 
     ],
   });
@@ -50,12 +51,11 @@ async function get_respuestas(equipo) {
   const res_equipos = Array.from(
     { length: len },
     (_, i) => {
-      const obj = {orig:data[0][i], dest:data[1][i], con:Number(data[2][i]), fa:Number(data[3][i]),im:Number(data[4][i]),ac:Number(data[5][i]),com:Number(data[6][i])}
-      obj.tot = obj.con + obj.fa + obj.im + obj.ac + obj.com;
+      const obj = {orig:data[0][i], dest:data[1][i], con:Number(data[2][i]), fa:Number(data[3][i]),im:Number(data[4][i]),ac:Number(data[5][i]),com:Number(data[6][i]), comment:data[7][i]}
       return obj
   })
   .filter(obj => obj.dest === equipo);
-  const sp_sum = res_equipos.reduce((acc,el) => acc + el.tot, 0)
+  const sp_sum = res_equipos.reduce((acc,el) => acc + (el.con + el.fa + el.im + el.ac + el.com), 0)
   const sotg = sp_sum / res_equipos.length
   const res = {equipos:res_equipos, sotg}
 
